@@ -1,4 +1,5 @@
 require 'socket'
+require 'thread'
 require 'logger'
 
 module Plog
@@ -26,6 +27,7 @@ module Plog
       @logger = options[:logger]
 
       @last_message_id = -1
+      @message_id_mutex = Mutex.new
     end
 
     def send(message)
@@ -55,8 +57,10 @@ module Plog
     private
 
     def next_message_id
-      @last_message_id += 1
-      @last_message_id %= 2 ** 32
+      @message_id_mutex.synchronize do
+        @last_message_id += 1
+        @last_message_id %= 2 ** 32
+      end
     end
 
     def chunk_string(string, size)
