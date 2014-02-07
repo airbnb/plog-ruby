@@ -12,7 +12,7 @@ module Plog
           message_id,
           length,
           payload
-        ].pack('CCS>S>S>l>l>x8a*')
+        ].pack('CCS>S>S>L>l>x8a*')
       end
     end
 
