@@ -4,7 +4,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require 'plog/version'
 
 Gem::Specification.new do |s|
-  s.name         = "plog"
+  s.name         = "plog-ruby"
   s.version      = Plog::VERSION
   s.platform     = Gem::Platform::RUBY
   s.authors      = ["Nelson Gauthier"]
