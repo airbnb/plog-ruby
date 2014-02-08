@@ -40,7 +40,7 @@ describe Plog::Packets::MultipartMessage do
     end
 
     it "encodes the multipart packet count big endian as bytes 02-03" do
-      expect(encoded_range(2, 3)).to eq([0, count])
+      expect(encoded_range(2, 3)).to eq([0, count - 1])
     end
 
     it "encodes the multipart packet index big endian as bytes 04-05" do
