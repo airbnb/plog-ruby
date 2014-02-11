@@ -6,9 +6,7 @@ module Plog
         return [
           PROTOCOL_VERSION,
           TYPE_MULTIPART_MESSAGE,
-          # As there is always at least one packet, count begins at zero for
-          # a single-part message.
-          count - 1,
+          count,
           index,
           chunk_size,
           message_id,
