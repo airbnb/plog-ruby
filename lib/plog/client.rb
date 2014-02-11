@@ -8,7 +8,7 @@ module Plog
     PROTOCOL_VERSION = Packets::PROTOCOL_VERSION
 
     DEFAULT_OPTIONS = {
-      :host => 'localhost',
+      :host => '127.0.0.1',
       :port => 23456,
       :chunk_size => 64000,
       :logger => Logger.new(nil)
