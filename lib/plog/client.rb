@@ -9,7 +9,7 @@ module Plog
 
     DEFAULT_OPTIONS = {
       :host => 'localhost',
-      :port => 54321,
+      :port => 23456,
       :chunk_size => 64000,
       :logger => Logger.new(nil)
     }
