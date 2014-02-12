@@ -7,15 +7,17 @@ describe Plog::Packets::MultipartMessage do
     # Each of these values were chosen to fit in a single byte.
     let(:message_id) { 1 }
     let(:length)     { 2 }
-    let(:chunk_size) { 3 }
-    let(:count)      { 4 }
-    let(:index)      { 5 }
+    let(:checksum)   { 3 }
+    let(:chunk_size) { 4 }
+    let(:count)      { 5 }
+    let(:index)      { 6 }
     let(:payload)    { 'xxx' }
 
     let(:encoded) do
       Plog::Packets::MultipartMessage.encode(
         message_id,
         length,
+        checksum,
         chunk_size,
         count,
         index,
@@ -59,8 +61,12 @@ describe Plog::Packets::MultipartMessage do
       expect(encoded_range(12, 15)).to eq([0, 0, 0, length])
     end
 
-    it "encodes zero padding for the reserved segment as bytes 16-23" do
-      expect(encoded_range(16, 23)).to eq([0, 0, 0, 0, 0, 0, 0, 0])
+    it "encodes the message checksum as bytes 16-19" do
+      expect(encoded_range(16, 19)).to eq([0, 0, 0, checksum])
+    end
+
+    it "encodes zero padding for the reserved segment as bytes 20-23" do
+      expect(encoded_range(20, 23)).to eq([0, 0, 0, 0])
     end
 
   end

@@ -17,7 +17,12 @@ describe Plog::Client do
   end
 
   describe '#send' do
-    let(:message) { 'xxx' }
+    let(:message)  { 'xxx' }
+    let(:checksum) { 200 }
+
+    before do
+      Plog::Checksum.stub(:compute).and_return(checksum)
+    end
 
     it "contacts the given host and port" do
       udp_socket.should_receive(:send).with(anything(), 0, subject.host, subject.port)
@@ -26,7 +31,14 @@ describe Plog::Client do
 
     it "encodes the message id, message length and chunk size" do
       Plog::Packets::MultipartMessage.should_receive(:encode).with(
-        0, message.length, chunk_size, anything(), anything(), message).and_call_original
+        0,
+        message.length,
+        checksum,
+        chunk_size,
+        anything(),
+        anything(),
+        message
+      ).and_call_original
       subject.send(message)
     end
 
@@ -43,7 +55,7 @@ describe Plog::Client do
     describe 'message id' do
       before do
         @message_ids = []
-        Plog::Packets::MultipartMessage.stub(:encode) do |message_id, _, _, _, _, _|
+        Plog::Packets::MultipartMessage.stub(:encode) do |message_id, _, _, _, _, _, _|
           @message_ids << message_id
         end
       end
@@ -61,7 +73,7 @@ describe Plog::Client do
 
       before do
         @sent_datagrams = []
-        Plog::Packets::MultipartMessage.stub(:encode) do |_, _, _, count, index, data|
+        Plog::Packets::MultipartMessage.stub(:encode) do |_, _, _, _, count, index, data|
           "#{count}:#{index}:#{data}"
         end
         udp_socket.stub(:send) do |datagram, _, _, _|
