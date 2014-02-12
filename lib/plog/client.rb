@@ -33,6 +33,7 @@ module Plog
     def send(message)
       message_id = next_message_id
       message_length = message.length
+      message_checksum = Checksum.compute(message)
       chunks = chunk_string(message, chunk_size)
 
       logger.debug { "Plog: sending (#{message_id}; #{chunks.length} chunk(s))" }
@@ -41,6 +42,7 @@ module Plog
           Packets::MultipartMessage.encode(
             message_id,
             message_length,
+            message_checksum,
             chunk_size,
             chunks.count,
             index,

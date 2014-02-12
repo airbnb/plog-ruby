@@ -16,4 +16,6 @@ Gem::Specification.new do |s|
   s.files        = `git ls-files`.split("\n")
   s.test_files   = `git ls-files -- spec/*`.split("\n")
   s.require_path = 'lib'
+
+  s.add_runtime_dependency 'murmurhash3', '>= 0.1.4'
 end
