@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'plog-ruby'
+require 'pp'
+
+options = {:timeout => 3.0}
+
+OptionParser.new do |opts|
+  opts.on '-h', '--host=' do |host|
+    options[:host] = host
+  end
+
+  opts.on '-p', '--port=' do |port|
+    options[:port] = port.to_i
+  end
+
+  opts.on '-t', '--timeout=' do |timeout|
+    options[:timeout] = timeout.to_f
+  end
+end.parse!
+
+pp Plog::Client.new(options).stats(options[:timeout])
