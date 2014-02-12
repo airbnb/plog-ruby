@@ -1,11 +1,16 @@
+require 'json'
 require 'socket'
 require 'thread'
 require 'logger'
 
 module Plog
+  class TimeoutException < StandardError
+  end
+
   class Client
     # The protocol version spoken by this client.
     PROTOCOL_VERSION = Packets::PROTOCOL_VERSION
+    RECV_SIZE = 65_536
 
     DEFAULT_OPTIONS = {
       :host => '127.0.0.1',
@@ -28,6 +33,12 @@ module Plog
 
       @last_message_id = -1
       @message_id_mutex = Mutex.new
+    end
+
+
+    def stats(timeout = 3.0)
+      send_to_socket("\0\0stats")
+      JSON.parse receive_packet_from_socket(timeout)
     end
 
     def send(message)
@@ -76,6 +87,16 @@ module Plog
       logger.error { "Plog: error writing to socket: #{e}" }
       close_socket
       raise e
+    end
+
+    def receive_packet_from_socket(timeout)
+      logger.debug { "Plog: receiving from socket #{socket} with timeout #{timeout}s" }
+
+      if IO::select([socket], nil, nil, timeout).nil?
+        raise TimeoutException, "No answer in #{timeout}s"
+      end
+
+      socket.recv RECV_SIZE
     end
 
     def socket

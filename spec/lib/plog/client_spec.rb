@@ -9,11 +9,41 @@ describe Plog::Client do
     double(UDPSocket).tap do |udp_socket|
       udp_socket.stub(:send)
       udp_socket.stub(:close)
+      udp_socket.stub(:recv)
     end
   end
 
   before do
     UDPSocket.stub(:new).and_return(udp_socket)
+  end
+
+  describe '#stats' do
+    let(:select_value) { [[udp_socket], [], []] }
+    let(:recv_value) { '{"foo":1}' }
+
+    before do
+      IO.stub(:select).and_return(select_value)
+      udp_socket.stub(:recv) { recv_value }
+    end
+
+    context 'timing out' do
+      let(:select_value) { nil }
+      it 'raises a TimeoutException' do
+        expect {subject.stats}.to raise_error Plog::TimeoutException
+      end
+    end
+
+    it 'sends a stats request' do
+      udp_socket.should_receive(:send) do |req, *extraneous|
+        expect(req.downcase).to start_with("\0\0stat")
+      end
+
+      subject.stats
+    end
+
+    it 'returns a statistics object from deserializing JSON' do
+      expect(subject.stats).to eq({'foo' => 1})
+    end
   end
 
   describe '#send' do
