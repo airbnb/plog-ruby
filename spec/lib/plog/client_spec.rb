@@ -104,7 +104,7 @@ describe Plog::Client do
       before do
         @sent_datagrams = []
         Plog::Packets::MultipartMessage.stub(:encode) do |_, _, _, _, count, index, data|
-          "#{count}:#{index}:#{data}"
+          [count, index, data]
         end
         udp_socket.stub(:send) do |datagram, _, _, _|
           @sent_datagrams << datagram
@@ -112,15 +112,16 @@ describe Plog::Client do
       end
 
       def validate_datagrams
-        # Reassemble the message and verify the counts and indexes.
-        reassembled_message = ""
-        @sent_datagrams.each_with_index do |datagram, datagram_index|
-          count, index, data = datagram.split(':')
+        # Reassemble the message as binary and verify the counts and indexes.
+        reassembled_message = "".force_encoding('BINARY')
+        @sent_datagrams.each_with_index do |(count, index, data), datagram_index|
           expect(count.to_i).to eq(expected_chunks.count)
           expect(index.to_i).to eq(datagram_index)
+          expect(data).to eq(expected_chunks[datagram_index].force_encoding('BINARY'))
           reassembled_message += data
         end
-        # Verify that the message was sent as intended.
+        # Convert the message back to the original encoding and verify.
+        reassembled_message.force_encoding(message.encoding)
         expect(reassembled_message).to eq(message)
       end
 
@@ -144,7 +145,20 @@ describe Plog::Client do
           subject.send(message)
           validate_datagrams
         end
+      end
 
+      context "when the message contains multi-byte encoded characters" do
+        let(:chunk_size) { 5 }
+        let(:message) { "\u00E9ABCDEFGH" }
+        let(:expected_chunks) { [
+            "\u00E9ABC",
+            "DEFGH"
+          ]}
+
+        it "correctly chunks the message" do
+          subject.send(message)
+          validate_datagrams
+        end
       end
     end
 
