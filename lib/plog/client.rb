@@ -42,6 +42,10 @@ module Plog
     end
 
     def send(message)
+      # Interpret the encoding of the string as binary so that chunking occurs
+      # at the byte-level and not at the character-level.
+      message = message.dup.force_encoding('BINARY')
+
       message_id = next_message_id
       message_length = message.length
       message_checksum = Checksum.compute(message)
