@@ -24,6 +24,8 @@ module Plog
     attr_reader :chunk_size
     attr_reader :logger
 
+    attr_reader :last_message_id
+
     def initialize(options={})
       options = DEFAULT_OPTIONS.merge(options)
       @host = options[:host]
@@ -31,7 +33,7 @@ module Plog
       @chunk_size = options[:chunk_size]
       @logger = options[:logger]
 
-      @last_message_id = -1
+      @last_message_id = Random.rand(2 ** 32)
       @message_id_mutex = Mutex.new
     end
 
