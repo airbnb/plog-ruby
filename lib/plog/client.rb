@@ -15,12 +15,15 @@ module Plog
     DEFAULT_OPTIONS = {
       :host => '127.0.0.1',
       :port => 23456,
+      # Use the socket's default value unless this option is specified.
+      :send_buffer_size => nil,
       :chunk_size => 64000,
       :logger => Logger.new(nil)
     }
 
     attr_reader :host
     attr_reader :port
+    attr_reader :send_buffer_size
     attr_reader :chunk_size
     attr_reader :logger
 
@@ -30,6 +33,7 @@ module Plog
       options = DEFAULT_OPTIONS.merge(options)
       @host = options[:host]
       @port = options[:port]
+      @send_buffer_size = options[:send_buffer_size]
       @chunk_size = options[:chunk_size]
       @logger = options[:logger]
 
@@ -106,7 +110,17 @@ module Plog
     end
 
     def socket
-      @socket ||= UDPSocket.new
+      @socket ||= begin
+        socket = UDPSocket.new
+        if send_buffer_size
+          socket.setsockopt(
+            Socket::SOL_SOCKET,
+            Socket::SO_SNDBUF,
+            send_buffer_size
+          )
+        end
+        socket
+      end
     end
 
     def close_socket

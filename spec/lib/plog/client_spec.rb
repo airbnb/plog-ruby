@@ -3,7 +3,8 @@ require 'spec_helper'
 describe Plog::Client do
 
   let(:chunk_size) { 5 }
-  subject { Plog::Client.new(:chunk_size => chunk_size) }
+  let(:client_options) { { :chunk_size => chunk_size } }
+  subject { Plog::Client.new(client_options) }
 
   let(:udp_socket) do
     double(UDPSocket).tap do |udp_socket|
@@ -52,6 +53,25 @@ describe Plog::Client do
 
     before do
       Plog::Checksum.stub(:compute).and_return(checksum)
+    end
+
+    it "constructs a UDP socket" do
+      UDPSocket.should_receive(:new).and_return(udp_socket)
+      subject.send(message)
+    end
+
+    context "when a send buffer size is specified" do
+      before do
+        client_options.merge!(:send_buffer_size => 1000)
+      end
+
+      it "sets the SO_SNDBUF socket option" do
+        udp_socket.should_receive(:setsockopt).with(
+          Socket::SOL_SOCKET,
+          Socket::SO_SNDBUF,
+          1000)
+        subject.send(message)
+      end
     end
 
     it "contacts the given host and port" do
