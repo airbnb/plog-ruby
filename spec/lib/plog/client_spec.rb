@@ -60,8 +60,9 @@ describe Plog::Client do
     end
 
     it "encodes the message id, message length and chunk size" do
+      first_id = subject.last_message_id
       Plog::Packets::MultipartMessage.should_receive(:encode).with(
-        0,
+        first_id + 1,
         message.length,
         checksum,
         chunk_size,
@@ -73,8 +74,9 @@ describe Plog::Client do
     end
 
     it "returns an monotonically increasing message id" do
-      expect(subject.send(message)).to eq(0)
-      expect(subject.send(message)).to eq(1)
+      first_id = subject.last_message_id
+      expect(subject.send(message)).to eq(first_id + 1)
+      expect(subject.send(message)).to eq(first_id + 2)
     end
 
     it "reuses the same socket" do
@@ -91,8 +93,10 @@ describe Plog::Client do
       end
 
       it "encodes each message with a monotonically increasing message id" do
+        first_id = subject.last_message_id
+        expected_sequence = (first_id + 1...first_id + 6).to_a
         5.times { subject.send(message) }
-        expect(@message_ids).to eq((0...5).to_a)
+        expect(@message_ids).to eq(expected_sequence)
       end
     end
 
