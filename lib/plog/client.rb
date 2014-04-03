@@ -18,6 +18,9 @@ module Plog
       # Use the socket's default value unless this option is specified.
       :send_buffer_size => nil,
       :chunk_size => 64000,
+
+      :large_message_threshold => nil,
+      :on_large_message => nil,
       :logger => Logger.new(nil)
     }
 
@@ -25,6 +28,9 @@ module Plog
     attr_reader :port
     attr_reader :send_buffer_size
     attr_reader :chunk_size
+
+    attr_reader :large_message_threshold
+    attr_reader :on_large_message
     attr_reader :logger
 
     attr_reader :last_message_id
@@ -35,6 +41,8 @@ module Plog
       @port = options[:port]
       @send_buffer_size = options[:send_buffer_size]
       @chunk_size = options[:chunk_size]
+      @large_message_threshold = options[:large_message_threshold]
+      @on_large_message = options[:on_large_message]
       @logger = options[:logger]
 
       @last_message_id = Random.rand(2 ** 32)
@@ -51,6 +59,7 @@ module Plog
       # Interpret the encoding of the string as binary so that chunking occurs
       # at the byte-level and not at the character-level.
       message = message.dup.force_encoding('BINARY')
+      notify_large_message(message) if large_message?(message)
 
       message_id = next_message_id
       message_length = message.length
@@ -78,6 +87,14 @@ module Plog
     end
 
     private
+
+    def large_message?(message)
+      large_message_threshold && message.length > large_message_threshold
+    end
+
+    def notify_large_message(message)
+      on_large_message && on_large_message.call(self, message)
+    end
 
     def next_message_id
       @message_id_mutex.synchronize do

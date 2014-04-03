@@ -104,6 +104,45 @@ describe Plog::Client do
       2.times { subject.send(message) }
     end
 
+    describe 'large messages' do
+      let(:large_message_threshold) { nil }
+      let(:callback) { lambda { |c, m| } }
+
+      before do
+        client_options.merge!({
+          :large_message_threshold => large_message_threshold,
+          :on_large_message => callback
+        })
+      end
+
+      context "when the large message threshold is nil" do
+        let(:large_message_threshold) { nil }
+
+        it "does not invoke the callback" do
+          callback.should_not_receive(:call)
+          subject.send(message)
+        end
+      end
+
+      context "when the large message threshold is given" do
+        let(:large_message_threshold) { 2 }
+        let(:message)  { 'xxx' }
+
+        it "invokes the callback with the client and message" do
+          callback.should_receive(:call).with(subject, message)
+          subject.send(message)
+        end
+
+        context "when the callback is nil" do
+          let(:callback) { nil }
+
+          it "doesn't raise" do
+            subject.send(message)
+          end
+        end
+      end
+    end
+
     describe 'message id' do
       before do
         @message_ids = []
