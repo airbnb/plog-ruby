@@ -243,4 +243,28 @@ describe Plog::Client do
 
   end
 
+  describe '#reset' do
+    let(:message)  { 'xxx' }
+
+    it "chooses a new random message id" do
+      Random.stub(:rand).and_return(2)
+      subject.send(message)
+      expect(subject.last_message_id).to eq(3)
+
+      Random.stub(:rand).and_return(5)
+      subject.reset
+      expect(subject.last_message_id).to eq(5)
+    end
+
+    context "with an initialized socket" do
+      before do
+        subject.send(message)
+        subject.socket.should_receive(:close)
+        subject.reset
+      end
+
+    end
+
+  end
+
 end
