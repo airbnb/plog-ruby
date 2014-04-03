@@ -45,10 +45,9 @@ module Plog
       @on_large_message = options[:on_large_message]
       @logger = options[:logger]
 
-      @last_message_id = Random.rand(2 ** 32)
       @message_id_mutex = Mutex.new
+      reset_message_id
     end
-
 
     def stats(timeout = 3.0)
       send_to_socket("\0\0stats")
@@ -86,6 +85,15 @@ module Plog
       raise e
     end
 
+    def reset
+      reset_message_id
+      close_socket
+    end
+
+    def socket
+      @socket ||= open_socket
+    end
+
     private
 
     def large_message?(message)
@@ -94,6 +102,12 @@ module Plog
 
     def notify_large_message(message)
       on_large_message && on_large_message.call(self, message)
+    end
+
+    def reset_message_id
+      @message_id_mutex.synchronize do
+        @last_message_id = Random.rand(2 ** 32)
+      end
     end
 
     def next_message_id
@@ -126,18 +140,16 @@ module Plog
       socket.recv RECV_SIZE
     end
 
-    def socket
-      @socket ||= begin
-        socket = UDPSocket.new
-        if send_buffer_size
-          socket.setsockopt(
-            Socket::SOL_SOCKET,
-            Socket::SO_SNDBUF,
-            send_buffer_size
-          )
-        end
-        socket
+    def open_socket
+      socket = UDPSocket.new
+      if send_buffer_size
+        socket.setsockopt(
+          Socket::SOL_SOCKET,
+          Socket::SO_SNDBUF,
+          send_buffer_size
+        )
       end
+      socket
     end
 
     def close_socket
