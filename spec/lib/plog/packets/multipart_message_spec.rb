@@ -69,6 +69,32 @@ describe Plog::Packets::MultipartMessage do
       expect(encoded_range(20, 23)).to eq([0, 0, 0, 0])
     end
 
+    let(:tags)       { ['tag1', 'tag2'] }
+    let(:encoded_with_tags) do
+      Plog::Packets::MultipartMessage.encode(
+        message_id,
+        length,
+        checksum,
+        chunk_size,
+        count,
+        index,
+        payload,
+        tags
+      )
+    end
+
+    def encoded_with_tags_range(first, last)
+      encoded_with_tags[first..last].bytes.to_a
+    end
+
+    it "encodes the tags length as bytes 20-21" do
+      expect(encoded_with_tags_range(20, 21)).to eq([0, 10])
+    end
+
+    it "encodes a tagged string with length 24 + tag length + payload length" do
+      expect(encoded_with_tags.length).to eq(24 + 10 + payload.length)
+    end
+
   end
 
 end

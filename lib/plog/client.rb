@@ -54,7 +54,7 @@ module Plog
       JSON.parse receive_packet_from_socket(timeout)
     end
 
-    def send(message)
+    def send(message, tags = nil)
       # Interpret the encoding of the string as binary so that chunking occurs
       # at the byte-level and not at the character-level.
       message = message.dup.force_encoding('BINARY')
@@ -75,7 +75,8 @@ module Plog
             chunk_size,
             chunks.count,
             index,
-            data
+            data,
+            tags
           ))
       end
 
