@@ -2,7 +2,7 @@ module Plog
   module Packets
 
     module MultipartMessage
-      def self.encode(message_id, length, checksum, chunk_size, count, index, payload, tags = nil)
+      def self.encode(message_id, length, checksum, chunk_size, count, index, payload, *tags)
         message = [
             PROTOCOL_VERSION,
             TYPE_MULTIPART_MESSAGE,

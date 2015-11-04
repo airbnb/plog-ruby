@@ -79,7 +79,7 @@ describe Plog::Packets::MultipartMessage do
         count,
         index,
         payload,
-        tags
+        *tags
       )
     end
 
