@@ -18,5 +18,5 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.executables  = 'plogstats'
 
-  s.add_runtime_dependency 'murmurhash3', '>= 0.1.4'
+  s.add_runtime_dependency 'murmurhash3', '~> 0.1'
 end
