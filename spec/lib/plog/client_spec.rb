@@ -88,7 +88,8 @@ describe Plog::Client do
         chunk_size,
         anything(),
         anything(),
-        message
+        message,
+        {}
       ).and_call_original
       subject.send(message)
     end

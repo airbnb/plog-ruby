@@ -2,7 +2,7 @@ module Plog
   module Packets
 
     module MultipartMessage
-      def self.encode(message_id, length, checksum, chunk_size, count, index, payload, *tags)
+      def self.encode(message_id, length, checksum, chunk_size, count, index, payload, options = {})
         message = [
             PROTOCOL_VERSION,
             TYPE_MULTIPART_MESSAGE,
@@ -17,6 +17,7 @@ module Plog
         template = 'CCS>S>S>L>l>L>S>x2'
 
         # Generate pack template for tags
+        tags = options[:tags]
         if tags.nil? || tags.empty?
           message << 0
         else
