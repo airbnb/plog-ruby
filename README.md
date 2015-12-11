@@ -4,8 +4,10 @@ Simple Ruby UDP client for the Plog Kafka forwarder.
 
 ### Build & run tests
 
-`gem build plog-ruby.gemspec`
-`rspec`
+```
+bundle install
+bundle exec rspec
+```
 
 ### Usage
 
