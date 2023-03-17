@@ -10,7 +10,7 @@ describe Plog do
     end
 
     it "passes options to the client initializer" do
-      Plog::Client.should_receive(:new).with(options).and_call_original
+      expect_any_instance_of(Plog::Client).to receive(:initialize).with(options).and_call_original
       Plog.new(options)
     end
   end
